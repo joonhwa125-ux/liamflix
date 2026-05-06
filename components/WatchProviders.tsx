@@ -99,13 +99,11 @@ export function WatchProviders({ region, title }: Props) {
 
   return (
     <section aria-labelledby="watch-heading">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h2 id="watch-heading" className="text-xl font-semibold">
-            어디서 볼까
-          </h2>
-          <InfoTooltip id="watch-info-tooltip" text={DISCLAIMER} />
-        </div>
+      <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+        <h2 id="watch-heading" className="text-xl font-semibold">
+          어디서 볼까
+        </h2>
+        <InfoTooltip id="watch-info-tooltip" text={DISCLAIMER} />
         {region.link && (
           <a
             href={region.link}

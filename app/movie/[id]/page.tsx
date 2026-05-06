@@ -201,8 +201,9 @@ export default async function MovieDetailPage({ params }: Params) {
             <h2 id="trailer-heading" className="mb-3 text-xl font-semibold">
               예고편
             </h2>
-            {/* lg 이상에서는 영상 좌측 + 댓글 우측 컬럼. lg 미만은 세로 적층. */}
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+            {/* lg 이상에서는 영상 좌측 + 댓글 우측 컬럼. 두 컬럼이 같은
+                높이를 가지도록 stretch. lg 미만은 세로 적층. */}
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-stretch">
               <div className="aspect-video w-full overflow-hidden rounded-lg bg-black lg:max-w-3xl lg:flex-1">
                 <iframe
                   src={`https://www.youtube-nocookie.com/embed/${trailer.key}`}

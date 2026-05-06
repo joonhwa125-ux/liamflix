@@ -13,7 +13,13 @@ export async function TrailerComments({ videoId, videoTitle }: Props) {
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
-    <section aria-labelledby="trailer-comments-heading">
+    // lg 이상에서 부모(flex items-stretch)로부터 높이를 받아 트레일러와
+    // 동일 높이로 늘어남. 내부는 flex column으로 댓글 카드들이 균등 분포되고
+    // 출처 문구는 하단에 고정.
+    <section
+      aria-labelledby="trailer-comments-heading"
+      className="flex h-full flex-col"
+    >
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h3 id="trailer-comments-heading" className="text-base font-semibold">
           YouTube 인기 댓글
@@ -28,7 +34,10 @@ export async function TrailerComments({ videoId, videoTitle }: Props) {
           YouTube에서 보기 ↗
         </a>
       </div>
-      <ul role="list" className="space-y-3">
+      <ul
+        role="list"
+        className="flex flex-1 flex-col gap-3 lg:justify-between lg:gap-2"
+      >
         {comments.map((c) => (
           <li
             key={c.id}
@@ -69,7 +78,7 @@ export async function TrailerComments({ videoId, videoTitle }: Props) {
           </li>
         ))}
       </ul>
-      <p className="mt-2 text-[11px] text-muted/80">
+      <p className="mt-3 text-[11px] text-muted/80">
         출처: YouTube. 댓글은 작성자의 의견이며 LiamFlix의 견해와 무관합니다.
       </p>
     </section>
