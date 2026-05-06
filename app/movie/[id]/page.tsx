@@ -88,7 +88,7 @@ export default async function MovieDetailPage({ params }: Params) {
     detail.original_title && detail.original_title !== detail.title;
 
   const directors = (credits?.crew ?? []).filter((c) => c.job === 'Director');
-  const cast = (credits?.cast ?? []).slice(0, 10);
+  const cast = (credits?.cast ?? []).slice(0, 16);
 
   return (
     <article>
@@ -212,18 +212,18 @@ export default async function MovieDetailPage({ params }: Params) {
               </p>
             )}
             {cast.length > 0 && (
-              <ul role="list" className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+              <ul role="list" className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
                 {cast.map((c) => {
                   const profile = TMDB_IMAGE.profile(c.profile_path, 'w185');
                   return (
-                    <li key={c.id} className="rounded-md bg-surface p-2">
+                    <li key={c.id} className="rounded-md bg-surface p-1.5">
                       <div className="relative aspect-[2/3] overflow-hidden rounded bg-surface-2">
                         {profile ? (
                           <Image
                             src={profile}
                             alt={`${c.name} 프로필`}
                             fill
-                            sizes="(max-width: 768px) 33vw, 200px"
+                            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 150px"
                             className="object-cover"
                           />
                         ) : (
