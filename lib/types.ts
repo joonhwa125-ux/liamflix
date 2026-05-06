@@ -187,6 +187,17 @@ export type PersonDetailFull = PersonDetail & {
   external_ids?: PersonExternalIds;
 };
 
+// --- YouTube comments -------------------------------------------------------
+
+export type YoutubeComment = {
+  id: string;
+  authorDisplayName: string;
+  authorProfileImageUrl: string | null;
+  textDisplay: string;
+  likeCount: number;
+  publishedAt: string;
+};
+
 // App-side curation types ----------------------------------------------------
 
 export type Period = '1m' | '3m' | '6m' | '12m';

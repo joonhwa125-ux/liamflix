@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import {
@@ -13,6 +14,7 @@ import {
 import type { MovieDetailFull, MovieVideo } from '@/lib/types';
 import { StaticMovieRow } from '@/components/StaticMovieRow';
 import { WatchProviders } from '@/components/WatchProviders';
+import { TrailerComments } from '@/components/TrailerComments';
 
 export const revalidate = 86400; // 24h
 
@@ -209,6 +211,11 @@ export default async function MovieDetailPage({ params }: Params) {
                 loading="lazy"
               />
             </div>
+            {/* YouTube 인기 댓글 — fetched separately so a slow/failed YouTube
+                request never blocks the trailer render. */}
+            <Suspense fallback={null}>
+              <TrailerComments videoId={trailer.key} videoTitle={detail.title} />
+            </Suspense>
           </section>
         )}
 
