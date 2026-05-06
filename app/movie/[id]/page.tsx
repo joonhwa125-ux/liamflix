@@ -216,7 +216,7 @@ export default async function MovieDetailPage({ params }: Params) {
               </div>
               {/* YouTube 인기 댓글 — fetched separately so a slow/failed YouTube
                   request never blocks the trailer render. */}
-              <div className="w-full lg:w-80 lg:shrink-0">
+              <div className="w-full lg:w-96 lg:shrink-0 2xl:w-[28rem]">
                 <Suspense fallback={null}>
                   <TrailerComments videoId={trailer.key} videoTitle={detail.title} />
                 </Suspense>
