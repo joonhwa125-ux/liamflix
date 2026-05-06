@@ -1,9 +1,14 @@
 import type {
   MovieCredits,
   MovieDetail,
+  MovieDetailFull,
   MovieListResponse,
   MovieVideos,
   Period,
+  ReleaseDateEntry,
+  ReleaseDatesResponse,
+  WatchProviderRegion,
+  WatchProvidersResponse,
 } from './types';
 import { periodToDateRange } from './periods';
 
@@ -156,6 +161,20 @@ export async function popular(page = 1): Promise<MovieListResponse> {
   });
 }
 
+export type TrendingWindow = 'day' | 'week';
+
+export async function trendingMovies(
+  window: TrendingWindow = 'week',
+  page = 1
+): Promise<MovieListResponse> {
+  // /trending doesn't accept `region`. Rotation is handled server-side by TMDB.
+  // Refresh hourly for 'day', every 6h for 'week'.
+  return tmdbFetch<MovieListResponse>(`/trending/movie/${window}`, {
+    params: { page },
+    revalidate: window === 'day' ? 60 * 60 : 60 * 60 * 6,
+  });
+}
+
 // --- Detail / credits / videos / recommendations ---------------------------
 
 export async function movieDetail(id: number | string): Promise<MovieDetail> {
@@ -174,6 +193,92 @@ export async function movieRecommendations(id: number | string): Promise<MovieLi
   return tmdbFetch<MovieListResponse>(`/movie/${id}/recommendations`, {
     revalidate: 60 * 60 * 6,
   });
+}
+
+// Single-call detail loader: combines /movie/{id} with credits, videos,
+// recommendations, watch/providers and release_dates via append_to_response.
+// Replaces 4–5 separate TMDB requests on the detail page with one.
+export async function movieDetailFull(id: number | string): Promise<MovieDetailFull> {
+  return tmdbFetch<MovieDetailFull>(`/movie/${id}`, {
+    params: {
+      append_to_response: 'credits,videos,recommendations,watch/providers,release_dates',
+    },
+    // OTT availability changes more often than core detail; cap at 6h so the
+    // providers section doesn't go stale for a full day.
+    revalidate: 60 * 60 * 6,
+  });
+}
+
+// --- watch/providers (JustWatch) -------------------------------------------
+
+export async function movieWatchProviders(
+  id: number | string
+): Promise<WatchProvidersResponse> {
+  return tmdbFetch<WatchProvidersResponse>(`/movie/${id}/watch/providers`, {
+    revalidate: 60 * 60 * 6,
+  });
+}
+
+export function pickWatchProviders(
+  res: WatchProvidersResponse | null | undefined,
+  region = DEFAULT_REGION
+): WatchProviderRegion | null {
+  if (!res?.results) return null;
+  return res.results[region] ?? null;
+}
+
+// TMDB serves provider logos on the same image CDN.
+export function watchProviderLogo(path: string | null, size: 'w45' | 'w92' = 'w92'): string | null {
+  return path ? `https://image.tmdb.org/t/p/${size}${path}` : null;
+}
+
+// --- release_dates (KR certification) --------------------------------------
+
+export async function movieReleaseDates(
+  id: number | string
+): Promise<ReleaseDatesResponse> {
+  return tmdbFetch<ReleaseDatesResponse>(`/movie/${id}/release_dates`, {
+    revalidate: 60 * 60 * 24,
+  });
+}
+
+// Returns the KR theatrical certification (e.g. "12", "15", "18", "ALL") if
+// available. Falls back to the first non-empty KR certification across types.
+export function pickKrCertification(
+  res: ReleaseDatesResponse | null | undefined
+): string | null {
+  if (!res?.results) return null;
+  const kr = res.results.find((r) => r.iso_3166_1 === 'KR');
+  if (!kr || kr.release_dates.length === 0) return null;
+  // Type 3 is theatrical; prefer it, then any with non-empty certification.
+  const theatrical = kr.release_dates.find(
+    (d: ReleaseDateEntry) => d.type === 3 && d.certification?.trim()
+  );
+  if (theatrical) return theatrical.certification.trim();
+  const any = kr.release_dates.find((d: ReleaseDateEntry) => d.certification?.trim());
+  return any ? any.certification.trim() : null;
+}
+
+// Korean-friendly label for a TMDB certification code.
+export function formatKrCertification(cert: string | null): string | null {
+  if (!cert) return null;
+  const c = cert.toUpperCase();
+  switch (c) {
+    case 'ALL':
+    case 'G':
+      return '전체관람가';
+    case '12':
+      return '12세';
+    case '15':
+      return '15세';
+    case '18':
+    case '19':
+    case 'R':
+      return '청소년관람불가';
+    default:
+      // Some entries arrive as "12세 이상 관람가" already — pass through.
+      return cert;
+  }
 }
 
 // --- Search -----------------------------------------------------------------

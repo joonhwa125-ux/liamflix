@@ -4,12 +4,14 @@ import {
   discoverMovies,
   nowPlaying,
   popular,
+  trendingMovies,
   upcoming,
   type GenreSlug,
 } from '@/lib/tmdb';
 import type { MovieListItem } from '@/lib/types';
 import { Hero } from '@/components/Hero';
 import { MovieRow } from '@/components/MovieRow';
+import { StaticMovieRow } from '@/components/StaticMovieRow';
 
 export const revalidate = 3600;
 
@@ -33,6 +35,7 @@ export default async function HomePage() {
   // break the whole page.
   const [
     popularData,
+    trendingData,
     newReleaseData,
     koreanData,
     foreignData,
@@ -46,6 +49,7 @@ export default async function HomePage() {
     dramaData,
   ] = await Promise.all([
     safe(popular(), 'popular'),
+    safe(trendingMovies('week'), 'trending_week'),
     safe(discoverMovies({ period: '1m', sortBy: 'popularity.desc' }), 'new_release'),
     safe(
       discoverMovies({ period: '3m', withOriginCountry: 'KR', sortBy: 'popularity.desc' }),
@@ -82,6 +86,12 @@ export default async function HomePage() {
       )}
 
       <div className="space-y-2 pb-8 pt-6">
+        {trendingData && trendingData.results.length > 0 && (
+          <StaticMovieRow
+            title="🔥 이번 주 트렌딩"
+            movies={trendingData.results}
+          />
+        )}
         {newReleaseData && newReleaseData.results.length > 0 && (
           <MovieRow
             title="🎬 이번 달 신작"

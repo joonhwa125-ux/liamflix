@@ -77,6 +77,59 @@ export type MovieDetail = {
   production_countries: { iso_3166_1: string; name: string }[];
 };
 
+// --- watch/providers (JustWatch) -------------------------------------------
+
+export type WatchProvider = {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string | null;
+  display_priority: number;
+};
+
+export type WatchProviderRegion = {
+  link: string;
+  flatrate?: WatchProvider[];
+  rent?: WatchProvider[];
+  buy?: WatchProvider[];
+  ads?: WatchProvider[];
+  free?: WatchProvider[];
+};
+
+export type WatchProvidersResponse = {
+  id: number;
+  results: Record<string, WatchProviderRegion | undefined>;
+};
+
+// --- release_dates (KR certification) --------------------------------------
+
+export type ReleaseDateEntry = {
+  certification: string;
+  iso_639_1: string;
+  release_date: string;
+  type: number; // 1 Premiere, 2 Theatrical (limited), 3 Theatrical, 4 Digital, 5 Physical, 6 TV
+  note?: string;
+};
+
+export type ReleaseDatesResult = {
+  iso_3166_1: string;
+  release_dates: ReleaseDateEntry[];
+};
+
+export type ReleaseDatesResponse = {
+  id: number;
+  results: ReleaseDatesResult[];
+};
+
+// Detail with append_to_response — single network call surfacing everything
+// the detail page needs.
+export type MovieDetailFull = MovieDetail & {
+  credits?: MovieCredits;
+  videos?: MovieVideos;
+  recommendations?: MovieListResponse;
+  'watch/providers'?: WatchProvidersResponse;
+  release_dates?: ReleaseDatesResponse;
+};
+
 // App-side curation types ----------------------------------------------------
 
 export type Period = '1m' | '3m' | '6m' | '12m';

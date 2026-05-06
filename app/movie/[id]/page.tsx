@@ -4,13 +4,14 @@ import type { Metadata } from 'next';
 import {
   TMDB_IMAGE,
   TmdbHttpError,
-  movieCredits,
-  movieDetail,
-  movieRecommendations,
-  movieVideos,
+  formatKrCertification,
+  movieDetailFull,
+  pickKrCertification,
+  pickWatchProviders,
 } from '@/lib/tmdb';
-import type { MovieDetail, MovieVideo } from '@/lib/types';
+import type { MovieDetailFull, MovieVideo } from '@/lib/types';
 import { StaticMovieRow } from '@/components/StaticMovieRow';
+import { WatchProviders } from '@/components/WatchProviders';
 
 export const revalidate = 86400; // 24h
 
@@ -33,10 +34,10 @@ function pickTrailer(videos: MovieVideo[]): MovieVideo | null {
   );
 }
 
-async function loadDetail(id: string): Promise<MovieDetail | null> {
+async function loadDetail(id: string): Promise<MovieDetailFull | null> {
   if (!isValidId(id)) return null;
   try {
-    return await movieDetail(id);
+    return await movieDetailFull(id);
   } catch (err) {
     if (err instanceof TmdbHttpError && err.status === 404) return null;
     throw err;
@@ -67,16 +68,13 @@ export default async function MovieDetailPage({ params }: Params) {
   const detail = await loadDetail(params.id);
   if (!detail) notFound();
 
-  // Secondary requests are non-blocking — settle independently.
-  const [creditsRes, videosRes, recsRes] = await Promise.allSettled([
-    movieCredits(params.id),
-    movieVideos(params.id),
-    movieRecommendations(params.id),
-  ]);
-
-  const credits = creditsRes.status === 'fulfilled' ? creditsRes.value : null;
-  const videos = videosRes.status === 'fulfilled' ? videosRes.value : null;
-  const recommendations = recsRes.status === 'fulfilled' ? recsRes.value : null;
+  // All sub-resources arrived in the same response via append_to_response.
+  const credits = detail.credits ?? null;
+  const videos = detail.videos ?? null;
+  const recommendations = detail.recommendations ?? null;
+  const watchRegion = pickWatchProviders(detail['watch/providers']);
+  const krCertRaw = pickKrCertification(detail.release_dates);
+  const krCert = formatKrCertification(krCertRaw);
 
   const trailer = videos ? pickTrailer(videos.results) : null;
   const backdrop = TMDB_IMAGE.backdrop(detail.backdrop_path, 'w1280');
@@ -138,6 +136,17 @@ export default async function MovieDetailPage({ params }: Params) {
                   <span>{runtimeText}</span>
                 </>
               )}
+              {krCert && (
+                <>
+                  <span aria-hidden="true">•</span>
+                  <span
+                    className="inline-flex items-center rounded border border-white/20 px-1.5 py-0.5 text-xs font-medium text-white"
+                    aria-label={`한국 관람등급 ${krCert}`}
+                  >
+                    {krCert}
+                  </span>
+                </>
+              )}
               {rating && (
                 <>
                   <span aria-hidden="true">•</span>
@@ -179,6 +188,9 @@ export default async function MovieDetailPage({ params }: Params) {
             </p>
           </section>
         )}
+
+        {/* Watch providers (KR) */}
+        {watchRegion && <WatchProviders region={watchRegion} title={detail.title} />}
 
         {/* Trailer */}
         {trailer && (
