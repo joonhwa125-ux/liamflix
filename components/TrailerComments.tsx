@@ -34,10 +34,7 @@ export async function TrailerComments({ videoId, videoTitle }: Props) {
           YouTube에서 보기 ↗
         </a>
       </div>
-      <ul
-        role="list"
-        className="flex flex-1 flex-col gap-3 lg:justify-between lg:gap-2"
-      >
+      <ul role="list" className="flex flex-1 flex-col gap-3">
         {comments.map((c) => (
           <li
             key={c.id}
