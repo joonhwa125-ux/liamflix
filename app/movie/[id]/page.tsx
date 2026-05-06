@@ -201,21 +201,26 @@ export default async function MovieDetailPage({ params }: Params) {
             <h2 id="trailer-heading" className="mb-3 text-xl font-semibold">
               예고편
             </h2>
-            <div className="aspect-video w-full max-w-3xl overflow-hidden rounded-lg bg-black">
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${trailer.key}`}
-                title={`${detail.title} 예고편`}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="h-full w-full"
-                loading="lazy"
-              />
+            {/* lg 이상에서는 영상 좌측 + 댓글 우측 컬럼. lg 미만은 세로 적층. */}
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+              <div className="aspect-video w-full overflow-hidden rounded-lg bg-black lg:max-w-3xl lg:flex-1">
+                <iframe
+                  src={`https://www.youtube-nocookie.com/embed/${trailer.key}`}
+                  title={`${detail.title} 예고편`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="h-full w-full"
+                  loading="lazy"
+                />
+              </div>
+              {/* YouTube 인기 댓글 — fetched separately so a slow/failed YouTube
+                  request never blocks the trailer render. */}
+              <div className="w-full lg:w-80 lg:shrink-0">
+                <Suspense fallback={null}>
+                  <TrailerComments videoId={trailer.key} videoTitle={detail.title} />
+                </Suspense>
+              </div>
             </div>
-            {/* YouTube 인기 댓글 — fetched separately so a slow/failed YouTube
-                request never blocks the trailer render. */}
-            <Suspense fallback={null}>
-              <TrailerComments videoId={trailer.key} videoTitle={detail.title} />
-            </Suspense>
           </section>
         )}
 

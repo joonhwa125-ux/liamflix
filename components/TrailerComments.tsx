@@ -13,7 +13,7 @@ export async function TrailerComments({ videoId, videoTitle }: Props) {
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
   return (
-    <section aria-labelledby="trailer-comments-heading" className="mt-6 max-w-3xl">
+    <section aria-labelledby="trailer-comments-heading">
       <div className="mb-3 flex items-baseline justify-between gap-3">
         <h3 id="trailer-comments-heading" className="text-base font-semibold">
           YouTube 인기 댓글
