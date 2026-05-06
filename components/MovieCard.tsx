@@ -36,7 +36,35 @@ export function MovieCard({ movie, variant = 'carousel' }: Props) {
     >
       <article>
         <div className="relative aspect-[2/3] overflow-hidden rounded-md bg-surface ring-1 ring-white/5 motion-safe:transition-transform motion-safe:group-hover:scale-[1.03] motion-safe:group-focus-visible:scale-[1.03] group-focus-visible:ring-2 group-focus-visible:ring-white">
-          {posterUrl ? (
+          {/* Fallback layer — always rendered behind the poster. Visible when
+              poster_path is null OR when TMDB returned a path whose image
+              actually 404s (common for upcoming/new releases). */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 flex flex-col items-center justify-center gap-2 p-3 text-center text-muted"
+          >
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
+              <line x1="7" y1="2" x2="7" y2="22" />
+              <line x1="17" y1="2" x2="17" y2="22" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <line x1="2" y1="7" x2="7" y2="7" />
+              <line x1="2" y1="17" x2="7" y2="17" />
+              <line x1="17" y1="17" x2="22" y2="17" />
+              <line x1="17" y1="7" x2="22" y2="7" />
+            </svg>
+            <span className="text-xs">포스터 준비 중</span>
+          </div>
+          {posterUrl && (
             <Image
               src={posterUrl}
               alt=""
@@ -48,16 +76,9 @@ export function MovieCard({ movie, variant = 'carousel' }: Props) {
               }
               className="object-cover"
             />
-          ) : (
-            <div
-              aria-hidden="true"
-              className="flex h-full w-full items-center justify-center text-xs text-muted"
-            >
-              포스터 없음
-            </div>
           )}
           {rating && (
-            <div className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-0.5 text-xs font-medium">
+            <div className="absolute bottom-2 left-2 z-10 rounded bg-black/70 px-2 py-0.5 text-xs font-medium">
               <span aria-hidden="true">★ {rating}</span>
             </div>
           )}
