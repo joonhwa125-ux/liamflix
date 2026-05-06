@@ -12,7 +12,7 @@ export function Header() {
         <Link
           href="/"
           aria-label="LiamFlix 홈으로 이동"
-          className="flex items-center gap-2 font-bold tracking-tight"
+          className="flex items-center font-extrabold tracking-tighter"
         >
           <span className="text-xl text-accent">LIAM</span>
           <span className="text-xl">FLIX</span>
