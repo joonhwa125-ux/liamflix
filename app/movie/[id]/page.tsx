@@ -29,10 +29,15 @@ function pickTrailer(videos: MovieVideo[]): MovieVideo | null {
     (v) => v.site === 'YouTube' && v.type === 'Trailer'
   );
   if (youTubeTrailers.length === 0) return null;
+  // Prefer official uploads over Korean-language fan uploads. Older or
+  // smaller titles often have no Korean studio channel, and TMDB will list
+  // fan re-uploads tagged iso_639_1='ko' alongside legitimate non-Korean
+  // official trailers — picking the latter avoids surfacing unaffiliated
+  // videos in the embed and the "YouTube에서 보기" link.
   return (
     youTubeTrailers.find((v) => v.iso_639_1 === 'ko' && v.official) ??
-    youTubeTrailers.find((v) => v.iso_639_1 === 'ko') ??
     youTubeTrailers.find((v) => v.official) ??
+    youTubeTrailers.find((v) => v.iso_639_1 === 'ko') ??
     youTubeTrailers[0]
   );
 }
