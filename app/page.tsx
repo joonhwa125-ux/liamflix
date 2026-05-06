@@ -1,6 +1,7 @@
 import {
   GENRE_LABELS,
   KOREAN_GENRES,
+  KR_OTT_PROVIDERS,
   discoverMovies,
   nowPlaying,
   popular,
@@ -42,6 +43,9 @@ export default async function HomePage() {
     topRatedData,
     nowPlayingData,
     upcomingData,
+    netflixData,
+    disneyPlusData,
+    familyData,
     actionData,
     romanceData,
     thrillerData,
@@ -65,6 +69,31 @@ export default async function HomePage() {
     ),
     safe(nowPlaying(), 'now_playing'),
     safe(upcoming(), 'upcoming'),
+    safe(
+      discoverMovies({
+        withWatchProviders: KR_OTT_PROVIDERS.netflix,
+        watchRegion: 'KR',
+        sortBy: 'popularity.desc',
+      }),
+      'ott_netflix'
+    ),
+    safe(
+      discoverMovies({
+        withWatchProviders: KR_OTT_PROVIDERS.disney_plus,
+        watchRegion: 'KR',
+        sortBy: 'popularity.desc',
+      }),
+      'ott_disney_plus'
+    ),
+    safe(
+      discoverMovies({
+        period: '12m',
+        certificationCountry: 'KR',
+        certificationLte: '12',
+        sortBy: 'popularity.desc',
+      }),
+      'family_friendly'
+    ),
     safe(genreFetch('action'), 'genre.action'),
     safe(genreFetch('romance'), 'genre.romance'),
     safe(genreFetch('thriller'), 'genre.thriller'),
@@ -98,6 +127,18 @@ export default async function HomePage() {
             kind="new_release"
             defaultPeriod="1m"
             initialMovies={newReleaseData.results}
+          />
+        )}
+        {netflixData && netflixData.results.length > 0 && (
+          <StaticMovieRow
+            title="🅽 넷플릭스에서 볼 수 있는 인기작"
+            movies={netflixData.results}
+          />
+        )}
+        {disneyPlusData && disneyPlusData.results.length > 0 && (
+          <StaticMovieRow
+            title="✨ 디즈니플러스 인기작"
+            movies={disneyPlusData.results}
           />
         )}
         {koreanData && koreanData.results.length > 0 && (
@@ -136,6 +177,12 @@ export default async function HomePage() {
             title="🔜 개봉 예정작"
             kind="upcoming"
             initialMovies={upcomingData.results}
+          />
+        )}
+        {familyData && familyData.results.length > 0 && (
+          <StaticMovieRow
+            title="👨‍👩‍👧 가족과 함께"
+            movies={familyData.results}
           />
         )}
         {actionData && actionData.results.length > 0 && (
