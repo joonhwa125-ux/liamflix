@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import {
@@ -228,29 +229,35 @@ export default async function MovieDetailPage({ params }: Params) {
                 {cast.map((c) => {
                   const profile = TMDB_IMAGE.profile(c.profile_path, 'w185');
                   return (
-                    <li key={c.id} className="rounded-md bg-surface p-1.5">
-                      <div className="relative aspect-[2/3] overflow-hidden rounded bg-surface-2">
-                        {profile ? (
-                          <Image
-                            src={profile}
-                            alt={`${c.name} 프로필`}
-                            fill
-                            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 150px"
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div
-                            aria-hidden="true"
-                            className="flex h-full w-full items-center justify-center text-xs text-muted"
-                          >
-                            사진 없음
-                          </div>
+                    <li key={c.id}>
+                      <Link
+                        href={`/person/${c.id}`}
+                        aria-label={`${c.name}${c.character ? `, ${c.character} 역` : ''}, 인물 상세 보기`}
+                        className="group block rounded-md bg-surface p-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                      >
+                        <div className="relative aspect-[2/3] overflow-hidden rounded bg-surface-2 motion-safe:transition-transform motion-safe:group-hover:scale-[1.03] motion-safe:group-focus-visible:scale-[1.03]">
+                          {profile ? (
+                            <Image
+                              src={profile}
+                              alt=""
+                              fill
+                              sizes="(max-width: 640px) 33vw, (max-width: 1024px) 20vw, 150px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div
+                              aria-hidden="true"
+                              className="flex h-full w-full items-center justify-center text-xs text-muted"
+                            >
+                              사진 없음
+                            </div>
+                          )}
+                        </div>
+                        <p className="mt-2 truncate text-sm font-medium">{c.name}</p>
+                        {c.character && (
+                          <p className="truncate text-xs text-muted">{c.character} 역</p>
                         )}
-                      </div>
-                      <p className="mt-2 truncate text-sm font-medium">{c.name}</p>
-                      {c.character && (
-                        <p className="truncate text-xs text-muted">{c.character} 역</p>
-                      )}
+                      </Link>
                     </li>
                   );
                 })}

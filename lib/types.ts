@@ -130,6 +130,63 @@ export type MovieDetailFull = MovieDetail & {
   release_dates?: ReleaseDatesResponse;
 };
 
+// --- Person -----------------------------------------------------------------
+
+export type PersonDetail = {
+  id: number;
+  name: string;
+  also_known_as: string[];
+  biography: string;
+  birthday: string | null;
+  deathday: string | null;
+  place_of_birth: string | null;
+  gender: number; // 0 unknown, 1 female, 2 male, 3 non-binary
+  known_for_department: string | null;
+  profile_path: string | null;
+  popularity: number;
+  homepage: string | null;
+};
+
+export type PersonMovieCast = {
+  id: number;
+  title: string;
+  original_title: string;
+  character: string;
+  poster_path: string | null;
+  release_date: string;
+  vote_average: number;
+};
+
+export type PersonMovieCrew = {
+  id: number;
+  title: string;
+  original_title: string;
+  job: string;
+  department: string;
+  poster_path: string | null;
+  release_date: string;
+  vote_average: number;
+};
+
+export type PersonMovieCredits = {
+  id: number;
+  cast: PersonMovieCast[];
+  crew: PersonMovieCrew[];
+};
+
+export type PersonExternalIds = {
+  id: number;
+  imdb_id: string | null;
+  instagram_id: string | null;
+  twitter_id: string | null;
+  facebook_id: string | null;
+};
+
+export type PersonDetailFull = PersonDetail & {
+  movie_credits?: PersonMovieCredits;
+  external_ids?: PersonExternalIds;
+};
+
 // App-side curation types ----------------------------------------------------
 
 export type Period = '1m' | '3m' | '6m' | '12m';

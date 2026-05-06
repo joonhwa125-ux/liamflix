@@ -5,6 +5,7 @@ import type {
   MovieListResponse,
   MovieVideos,
   Period,
+  PersonDetailFull,
   ReleaseDateEntry,
   ReleaseDatesResponse,
   WatchProviderRegion,
@@ -96,6 +97,13 @@ type DiscoverArgs = {
     | 'primary_release_date.desc';
   voteCountGte?: number;
   page?: number;
+  /** TMDB watch provider id(s). Use with watchRegion (defaults to KR). */
+  withWatchProviders?: number | string;
+  watchRegion?: string;
+  /** Certification country for `certification.lte` (e.g., 'KR'). */
+  certificationCountry?: string;
+  /** Maximum certification (e.g., '12' to include 전체관람가/12세 only). */
+  certificationLte?: string;
 };
 
 export async function discoverMovies(args: DiscoverArgs): Promise<MovieListResponse> {
@@ -115,6 +123,15 @@ export async function discoverMovies(args: DiscoverArgs): Promise<MovieListRespo
   if (args.withOriginCountry) params.with_origin_country = args.withOriginCountry;
   if (args.withGenres !== undefined) params.with_genres = args.withGenres;
   if (args.voteCountGte !== undefined) params['vote_count.gte'] = args.voteCountGte;
+  if (args.withWatchProviders !== undefined) {
+    params.with_watch_providers = args.withWatchProviders;
+    // TMDB requires watch_region whenever with_watch_providers is set.
+    params.watch_region = args.watchRegion ?? DEFAULT_REGION;
+    // Limit to monetization types most users care about (subscription/free/ads).
+    params.with_watch_monetization_types = 'flatrate|free|ads';
+  }
+  if (args.certificationCountry) params.certification_country = args.certificationCountry;
+  if (args.certificationLte) params['certification.lte'] = args.certificationLte;
 
   // TMDB has no `without_origin_country`. We approximate "foreign" by excluding
   // KR via with_origin_country=... which TMDB does not support either, so for
@@ -207,6 +224,33 @@ export async function movieDetailFull(id: number | string): Promise<MovieDetailF
     // providers section doesn't go stale for a full day.
     revalidate: 60 * 60 * 6,
   });
+}
+
+// --- Person -----------------------------------------------------------------
+
+// Single-call person loader: combines /person/{id} with movie_credits and
+// external_ids via append_to_response. Returns 404 → caller maps to notFound().
+export async function personDetailFull(id: number | string): Promise<PersonDetailFull> {
+  return tmdbFetch<PersonDetailFull>(`/person/${id}`, {
+    params: { append_to_response: 'movie_credits,external_ids' },
+    revalidate: 60 * 60 * 24,
+  });
+}
+
+// TMDB Korean biographies are frequently empty. Fetches the English biography
+// as a fallback when the localized one is missing.
+export async function personBiographyEn(id: number | string): Promise<string | null> {
+  try {
+    const url = new URL(`${TMDB_BASE}/person/${id}`);
+    url.searchParams.set('api_key', getApiKey());
+    url.searchParams.set('language', 'en-US');
+    const res = await fetch(url, { next: { revalidate: 60 * 60 * 24 } });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { biography?: string };
+    return json.biography?.trim() || null;
+  } catch {
+    return null;
+  }
 }
 
 // --- watch/providers (JustWatch) -------------------------------------------
@@ -314,4 +358,28 @@ export const GENRE_LABELS: Record<GenreSlug, string> = {
   drama: '드라마',
   horror: '공포',
   mystery: '미스터리',
+};
+
+// --- Korean OTT providers (TMDB / JustWatch ids) ----------------------------
+// IDs are stable across TMDB; verified against /watch/providers/movie?watch_region=KR.
+export const KR_OTT_PROVIDERS = {
+  netflix: 8,
+  disney_plus: 337,
+  tving: 1881,
+  wavve: 1883,
+  coupang_play: 356,
+  watcha: 97,
+  apple_tv_plus: 350,
+} as const;
+
+export type KrOttSlug = keyof typeof KR_OTT_PROVIDERS;
+
+export const KR_OTT_LABELS: Record<KrOttSlug, string> = {
+  netflix: '넷플릭스',
+  disney_plus: '디즈니플러스',
+  tving: '티빙',
+  wavve: '웨이브',
+  coupang_play: '쿠팡플레이',
+  watcha: '왓챠',
+  apple_tv_plus: 'Apple TV+',
 };
